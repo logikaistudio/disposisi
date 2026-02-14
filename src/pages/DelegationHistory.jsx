@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { sql } from '../lib/db';
-import { Loader2, ArrowLeft, Filter, Calendar, User, Eye, CheckCircle, Clock } from 'lucide-react';
+import { Loader2, ArrowLeft, Filter, Calendar, User, Eye, CheckCircle, Clock, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const DelegationHistory = () => {
@@ -9,8 +9,14 @@ const DelegationHistory = () => {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
+    const [currentUser, setCurrentUser] = useState(null);
 
     useEffect(() => {
+        const userStr = sessionStorage.getItem('iwogate_user');
+        if (userStr) {
+            setCurrentUser(JSON.parse(userStr));
+        }
+
         const fetchTasks = async () => {
             try {
                 // Fetch outgoing tasks
@@ -39,12 +45,27 @@ const DelegationHistory = () => {
         fetchTasks();
     }, []);
 
+    const handleDelete = async (id, e) => {
+        e.stopPropagation();
+        if (!confirm("Hapus delegasi ini dari riwayat? Data tugas akan hilang permanen.")) return;
+        try {
+            await sql`DELETE FROM tasks WHERE id = ${id}`;
+            setTasks(prev => prev.filter(t => t.id !== id));
+            alert("Berhasil dihapus.");
+        } catch (err) {
+            console.error("Delete failed:", err);
+            alert("Gagal menghapus.");
+        }
+    };
+
     const filteredTasks = tasks.filter(task => {
         const matchesSearch = task.title.toLowerCase().includes(search.toLowerCase()) ||
             task.assignee.toLowerCase().includes(search.toLowerCase());
         const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
         return matchesSearch && matchesStatus;
     });
+
+    const canDelete = currentUser?.role === 'admin' || currentUser?.role === 'superuser';
 
     return (
         <div className="history-page animate-fade-in" style={{ paddingBottom: '2rem' }}>
@@ -122,12 +143,24 @@ const DelegationHistory = () => {
                                             </span>
                                         </td>
                                         <td style={{ padding: '0.75rem', textAlign: 'center' }}>
-                                            <button
-                                                onClick={() => navigate(`/task/${task.id}`)}
-                                                style={{ color: 'var(--primary)', padding: '0.25rem' }}
-                                            >
-                                                <Eye size={18} />
-                                            </button>
+                                            <div className="flex justify-center gap-2">
+                                                <button
+                                                    onClick={() => navigate(`/task/${task.id}`)}
+                                                    style={{ color: 'var(--primary)', padding: '0.25rem' }}
+                                                    title="Lihat Detail"
+                                                >
+                                                    <Eye size={18} />
+                                                </button>
+                                                {canDelete && (
+                                                    <button
+                                                        onClick={(e) => handleDelete(task.id, e)}
+                                                        className="text-red-500 hover:text-red-700 p-1"
+                                                        title="Hapus"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, User, Download, CheckCircle, XCircle, FileText, Loader2, ArrowRightCircle } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Download, CheckCircle, XCircle, FileText, Loader2, ArrowRightCircle, Trash2 } from 'lucide-react';
 import { sql } from '../lib/db';
 import './TaskDetail.css';
 
@@ -11,6 +11,7 @@ const TaskDetail = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [updating, setUpdating] = useState(false);
+    const [currentUser, setCurrentUser] = useState(null);
 
     // Action Modal State
     const [modal, setModal] = useState({ open: false, type: '', title: '' });
@@ -21,6 +22,11 @@ const TaskDetail = () => {
     const [selectedDelegate, setSelectedDelegate] = useState('');
 
     useEffect(() => {
+        const userStr = sessionStorage.getItem('iwogate_user');
+        if (userStr) {
+            setCurrentUser(JSON.parse(userStr));
+        }
+
         const fetchData = async () => {
             try {
                 // Fetch Task
@@ -77,6 +83,21 @@ const TaskDetail = () => {
         if (id) fetchData();
     }, [id]);
 
+    const handleDelete = async () => {
+        if (!confirm("PERINGATAN: Apakah Anda yakin ingin menghapus tugas ini secara permanen? Aksi ini tidak dapat dibatalkan.")) return;
+        try {
+            setUpdating(true);
+            await sql`DELETE FROM tasks WHERE id = ${id}`;
+            alert("Tugas berhasil dihapus.");
+            navigate('/');
+        } catch (err) {
+            console.error("Delete failed:", err);
+            alert("Gagal menghapus tugas: " + err.message);
+        } finally {
+            setUpdating(false);
+        }
+    };
+
     const openModal = (type) => {
         setModal({
             open: true,
@@ -99,7 +120,7 @@ const TaskDetail = () => {
 
         setUpdating(true);
         try {
-            const currentUserId = 1; // Mock logged in user
+            const currentUserId = currentUser?.id || 1; // Use actual user ID
 
             if (modal.type === 'delegate') {
                 const targetUser = users.find(u => u.id == selectedDelegate);
@@ -146,13 +167,26 @@ const TaskDetail = () => {
     if (error) return <div className="detail-page p-4 text-center text-red-500">{error} <br /><button onClick={() => navigate('/')} className="mt-4 underline">Kembali</button></div>;
     if (!task) return null;
 
+    const canDelete = currentUser?.role === 'admin' || currentUser?.role === 'superuser';
+
     return (
         <div className="detail-page animate-fade-in relative">
-            <header className="page-header simple-header">
-                <button onClick={() => navigate(-1)} className="back-btn">
-                    <ArrowLeft size={24} />
-                </button>
-                <h2>Detail Tugas</h2>
+            <header className="page-header simple-header flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                    <button onClick={() => navigate(-1)} className="back-btn">
+                        <ArrowLeft size={24} />
+                    </button>
+                    <h2>Detail Tugas</h2>
+                </div>
+                {canDelete && (
+                    <button
+                        onClick={handleDelete}
+                        className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition-colors"
+                        title="Hapus Tugas (Admin Only)"
+                    >
+                        <Trash2 size={24} />
+                    </button>
+                )}
             </header>
 
             <div className="task-detail-card mb-6">
