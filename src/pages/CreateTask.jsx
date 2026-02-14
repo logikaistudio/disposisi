@@ -13,6 +13,9 @@ const CreateTask = () => {
     ]);
 
     const [desc, setDesc] = useState('');
+    const [refNo, setRefNo] = useState('');
+    const [docDate, setDocDate] = useState('');
+    const [sender, setSender] = useState('');
     const [files, setFiles] = useState([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -157,7 +160,10 @@ const CreateTask = () => {
                     assigned_to_user_id,
                     status, 
                     due_date, 
-                    type
+                    type,
+                    reference_no,
+                    document_date,
+                    sender_info
                 ) VALUES (
                     ${row.title},
                     ${desc},
@@ -166,7 +172,10 @@ const CreateTask = () => {
                     ${assignedToUserId},
                     'Pending',
                     ${row.deadline},
-                    'outgoing'
+                    'outgoing',
+                    ${refNo},
+                    ${docDate || null},
+                    ${sender}
                 )
                 RETURNING id
             `;
@@ -205,6 +214,38 @@ const CreateTask = () => {
             </header>
 
             <form className="create-form" onSubmit={handleSubmit}>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div className="form-group">
+                        <label>No. Surat / Diagenda</label>
+                        <input
+                            type="text"
+                            placeholder="Contoh: 001/HR/2026"
+                            value={refNo}
+                            onChange={(e) => setRefNo(e.target.value)}
+                            className="bg-white"
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>Tanggal Surat</label>
+                        <input
+                            type="date"
+                            value={docDate}
+                            onChange={(e) => setDocDate(e.target.value)}
+                            className="bg-white"
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>Pengirim (Asal Surat)</label>
+                        <input
+                            type="text"
+                            placeholder="Contoh: Kementerian Kesehatan"
+                            value={sender}
+                            onChange={(e) => setSender(e.target.value)}
+                            className="bg-white"
+                        />
+                    </div>
+                </div>
+
                 <div className="form-group">
                     <label>Deskripsi & Instruksi Umum (Opsional)</label>
                     <textarea
