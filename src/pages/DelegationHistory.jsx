@@ -109,8 +109,8 @@ const DelegationHistory = () => {
             {loading ? (
                 <div className="flex justify-center p-8"><Loader2 className="animate-spin text-primary" /></div>
             ) : (
-                <div className="table-container" style={{ overflowX: 'auto', background: 'white', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
+                <div className="table-container" style={{ width: '100%', overflowX: 'auto', background: 'white', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', WebkitOverflowScrolling: 'touch' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '800px' }}>
                         <thead>
                             <tr style={{ background: '#f8fafc', borderBottom: '1px solid var(--border)' }}>
                                 <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', color: 'var(--secondary)' }}>Tanggal</th>
