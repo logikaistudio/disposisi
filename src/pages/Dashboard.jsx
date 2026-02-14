@@ -12,7 +12,14 @@ const Dashboard = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    const [currentUser, setCurrentUser] = useState(null);
+
     useEffect(() => {
+        const userStr = sessionStorage.getItem('iwogate_user');
+        if (userStr) {
+            setCurrentUser(JSON.parse(userStr));
+        }
+
         const fetchTasks = async () => {
             try {
                 // Fetch tasks with assigner name
@@ -31,7 +38,7 @@ const Dashboard = () => {
                 // Format the tasks for display
                 const formattedTasks = result.map(task => ({
                     ...task,
-                    assignedBy: task.type === 'outgoing' ? 'Saya' : `${task.assigned_by_name} (${task.assigned_by_dept})`,
+                    assignedBy: task.type === 'outgoing' ? 'Saya' : (task.assigned_by_name ? `${task.assigned_by_name} (${task.assigned_by_dept})` : 'System'),
                     // Format date simply
                     dueDate: new Date(task.due_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
                 }));
@@ -47,6 +54,18 @@ const Dashboard = () => {
 
         fetchTasks();
     }, []);
+
+    const handleDelete = async (taskId) => {
+        if (!confirm("Hapus tugas ini? Data akan hilang permanen.")) return;
+        try {
+            await sql`DELETE FROM tasks WHERE id = ${taskId}`;
+            setTasks(prev => prev.filter(t => t.id !== taskId));
+            alert("Tugas berhasil dihapus.");
+        } catch (err) {
+            console.error("Delete failed:", err);
+            alert("Gagal menghapus tugas.");
+        }
+    };
 
     const filteredTasks = tasks.filter(task =>
         task.type === activeTab &&
@@ -76,7 +95,7 @@ const Dashboard = () => {
     return (
         <div className="dashboard-page">
             <header className="page-header">
-                <h2>Halo, Pak Hartono</h2>
+                <h2>Halo, {currentUser?.name || 'User'}</h2>
                 <p className="subtitle">
                     {pendingCount > 0
                         ? `Anda memiliki ${pendingCount} tugas masuk yang perlu perhatian.`
@@ -119,7 +138,12 @@ const Dashboard = () => {
             <div className="task-list animate-fade-in">
                 {filteredTasks.length > 0 ? (
                     filteredTasks.map(task => (
-                        <TaskCard key={task.id} task={task} />
+                        <TaskCard
+                            key={task.id}
+                            task={task}
+                            currentUser={currentUser}
+                            onDelete={handleDelete}
+                        />
                     ))
                 ) : (
                     <div className="empty-state">
