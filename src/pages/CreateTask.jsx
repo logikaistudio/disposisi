@@ -18,21 +18,30 @@ const CreateTask = () => {
     const [sender, setSender] = useState('');
     const [files, setFiles] = useState([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [currentUser, setCurrentUser] = useState(null);
 
     // Assignees List (Departments + Users)
     const [assignees, setAssignees] = useState([]);
 
     useEffect(() => {
+        const userStr = sessionStorage.getItem('iwogate_user');
+        const user = userStr ? JSON.parse(userStr) : null;
+        setCurrentUser(user);
+
         const fetchAssignees = async () => {
             try {
-                // Fetch Departments (Hardcoded) + Users (From DB) if needed
-                // For simplicity, let's mix users and dept
-                // Actually, let's just use departments for now, plus specific users from DB
-                const result = await sql`SELECT id, name, department, role FROM users WHERE id != 1`; // exclude self
+                // Fetch Departments (Hardcoded) + Users (From DB)
+                const result = await sql`SELECT id, name, department, role FROM users WHERE id != ${user?.id || 1}`;
 
-                const userOptions = result.map(u => ({
+                // If role is 'staff' or 'staf', limit to Director
+                let filteredResult = result;
+                if (user?.role === 'staff' || user?.role === 'staf') {
+                    filteredResult = result.filter(u => u.role === 'director' || u.role === 'direktur' || u.role === 'admin' || u.role === 'superuser');
+                }
+
+                const userOptions = filteredResult.map(u => ({
                     value: `user:${u.id}`,
-                    label: `${u.name} (${u.department})`,
+                    label: `${u.name} (${u.role === 'director' ? 'Direktur' : u.department})`,
                     type: 'user',
                     dept: u.department
                 }));
@@ -45,7 +54,13 @@ const CreateTask = () => {
                     { value: 'dept:Ops', label: 'Departemen Operasional', type: 'dept', dept: 'Ops' }
                 ];
 
-                setAssignees([...deptOptions, ...userOptions]);
+                // If staff, hide department options, force user selection (Director)
+                if (user?.role === 'staff' || user?.role === 'staf') {
+                    setAssignees([...userOptions]);
+                } else {
+                    setAssignees([...deptOptions, ...userOptions]);
+                }
+
             } catch (err) {
                 console.error("Failed to fetch assignees:", err);
             }
@@ -167,7 +182,7 @@ const CreateTask = () => {
                 ) VALUES (
                     ${row.title},
                     ${desc},
-                    1, 
+                    ${currentUser?.id || 1}, 
                     ${assignedToDept},
                     ${assignedToUserId},
                     'Pending',

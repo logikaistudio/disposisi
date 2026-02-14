@@ -128,7 +128,8 @@ const TaskDetail = () => {
                 await sql`
                     UPDATE tasks 
                     SET assigned_to_user_id = ${selectedDelegate}, 
-                        assigned_to_dept = ${targetUser.department}
+                        assigned_to_dept = ${targetUser.department},
+                        assigned_by_user_id = ${currentUserId}
                     WHERE id = ${id}
                 `;
 
