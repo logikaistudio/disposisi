@@ -114,6 +114,11 @@ const Settings = () => {
         setRoles(allRoles);
     };
 
+    const fetchUsers = async () => {
+        const allUsers = await sql`SELECT * FROM users ORDER BY id ASC`;
+        setUsers(allUsers);
+    };
+
     const handleSave = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -191,7 +196,22 @@ const Settings = () => {
         }
     };
 
-    const handleDeleteRole = async (id) => {
+    const handleDelete = async (id) => {
+        if (!confirm("Yakin ingin menghapus user ini?")) return;
+        try {
+            await sql`DELETE FROM users WHERE id = ${id}`;
+            await fetchUsers();
+        } catch (err) {
+            console.error(err);
+            alert("Gagal menghapus user (mungkin terikat data lain).");
+        }
+    };
+
+    const handleDeleteRole = async (id, code) => {
+        if (code === 'superuser') {
+            alert("Role Superuser tidak dapat dihapus!");
+            return;
+        }
         if (!confirm("Are you sure? This might affect users assigned to this role.")) return;
         try {
             await sql`DELETE FROM roles WHERE id = ${id}`;
@@ -326,7 +346,7 @@ const Settings = () => {
                                         <button onClick={() => openModal('edit', role)} className="action-icon-btn bg-slate-100" title="Edit Role">
                                             <Edit size={16} />
                                         </button>
-                                        <button onClick={() => handleDeleteRole(role.id)} className="action-icon-btn delete-btn bg-red-50" title="Hapus Role">
+                                        <button onClick={() => handleDeleteRole(role.id, role.code)} className="action-icon-btn delete-btn bg-red-50" title="Hapus Role">
                                             <Trash2 size={16} />
                                         </button>
                                     </div>
