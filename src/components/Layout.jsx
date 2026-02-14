@@ -32,6 +32,14 @@ const MobileNav = () => {
 const Header = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const navigate = useNavigate();
+    const [currentUser, setCurrentUser] = useState(null);
+
+    React.useEffect(() => {
+        const userStr = sessionStorage.getItem('iwogate_user');
+        if (userStr) {
+            setCurrentUser(JSON.parse(userStr));
+        }
+    }, []);
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
@@ -46,6 +54,8 @@ const Header = () => {
             navigate('/login');
         }
     };
+
+    const canAccessSettings = currentUser?.role === 'admin' || currentUser?.role === 'superuser';
 
     return (
         <header className="app-header">
@@ -65,9 +75,11 @@ const Header = () => {
                             <button onClick={() => handleNavigate('/profile')} className="dropdown-item">
                                 <User size={18} /> Profil Saya
                             </button>
-                            <button onClick={() => handleNavigate('/settings')} className="dropdown-item">
-                                <Users size={18} /> Pengaturan User
-                            </button>
+                            {canAccessSettings && (
+                                <button onClick={() => handleNavigate('/settings')} className="dropdown-item">
+                                    <Users size={18} /> Pengaturan User
+                                </button>
+                            )}
                             <div className="dropdown-divider"></div>
                             <button onClick={handleLogout} className="dropdown-item text-red-600">
                                 <LogOut size={18} /> Keluar

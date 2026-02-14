@@ -67,9 +67,24 @@ const Settings = () => {
                     sql`SELECT * FROM roles ORDER BY id ASC`
                 ]);
 
-                setUsers(allUsers);
+                // Apply Filters based on Role
+                const role = dbUser?.role || localUser.role;
+                const userId = dbUser?.id || localUser.id;
+
+                if (role === 'superuser') {
+                    setUsers(allUsers);
+                    setRoles(allRoles);
+                } else if (role === 'admin') {
+                    // Admin sees: Self + (Role != Superuser AND Role != Admin)
+                    setUsers(allUsers.filter(u => u.id === userId || (u.role !== 'superuser' && u.role !== 'admin')));
+                    setRoles(allRoles.filter(r => r.code !== 'superuser' && r.code !== 'admin'));
+                } else {
+                    // Standard User? Should not be here, but just in case
+                    setUsers(allUsers.filter(u => u.id === userId));
+                    setRoles([]);
+                }
+
                 setDepartments(allDepts);
-                setRoles(allRoles);
             } catch (err) {
                 console.error("Failed to load settings:", err);
             } finally {
@@ -111,12 +126,20 @@ const Settings = () => {
 
     const fetchRoles = async () => {
         const allRoles = await sql`SELECT * FROM roles ORDER BY id ASC`;
-        setRoles(allRoles);
+        if (currentUser?.role === 'superuser') {
+            setRoles(allRoles);
+        } else if (currentUser?.role === 'admin') {
+            setRoles(allRoles.filter(r => r.code !== 'superuser' && r.code !== 'admin'));
+        }
     };
 
     const fetchUsers = async () => {
         const allUsers = await sql`SELECT * FROM users ORDER BY id ASC`;
-        setUsers(allUsers);
+        if (currentUser?.role === 'superuser') {
+            setUsers(allUsers);
+        } else if (currentUser?.role === 'admin') {
+            setUsers(allUsers.filter(u => u.id === currentUser.id || (u.role !== 'superuser' && u.role !== 'admin')));
+        }
     };
 
     const handleSave = async (e) => {
