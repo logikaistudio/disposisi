@@ -53,7 +53,7 @@ const Settings = () => {
                 }
 
                 // Fetch current logged in user logic
-                const userStr = localStorage.getItem('iwogate_user');
+                const userStr = sessionStorage.getItem('iwogate_user');
                 if (userStr) {
                     const localUser = JSON.parse(userStr);
                     const [dbUser] = await sql`SELECT * FROM users WHERE id = ${localUser.id}`;

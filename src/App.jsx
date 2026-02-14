@@ -12,7 +12,7 @@ import Profile from './pages/Profile';
 
 // Helper component to check auth
 const RequireAuth = ({ children }) => {
-  const user = localStorage.getItem('iwogate_user');
+  const user = sessionStorage.getItem('iwogate_user');
   if (!user) {
     return <Navigate to="/login" replace />;
   }

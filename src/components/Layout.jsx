@@ -42,7 +42,7 @@ const Header = () => {
 
     const handleLogout = () => {
         if (confirm("Apakah Anda yakin ingin keluar?")) {
-            localStorage.removeItem('iwogate_user');
+            sessionStorage.removeItem('iwogate_user');
             navigate('/login');
         }
     };

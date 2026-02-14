@@ -40,8 +40,8 @@ const Login = () => {
             }
 
             // Success
-            // Store user session
-            localStorage.setItem('iwogate_user', JSON.stringify(user));
+            // Store user session - utilize sessionStorage so it clears on restart
+            sessionStorage.setItem('iwogate_user', JSON.stringify(user));
 
             // Redirect
             navigate('/');
@@ -110,13 +110,7 @@ const Login = () => {
                     </button>
                 </form>
 
-                <div className="login-footer">
-                    <p>Default Accounts (Prototype):</p>
-                    <div className="credentials">
-                        <small>Super Admin: <b>superadmin</b> / <b>password123</b></small>
-                        <small>Admin: <b>admin</b> / <b>iwogate123</b></small>
-                    </div>
-                </div>
+
             </div>
         </div>
     );

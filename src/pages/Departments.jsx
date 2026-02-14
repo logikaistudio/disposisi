@@ -23,7 +23,7 @@ const Departments = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
-        const userStr = localStorage.getItem('iwogate_user');
+        const userStr = sessionStorage.getItem('iwogate_user');
         if (userStr) {
             setCurrentUser(JSON.parse(userStr));
         }

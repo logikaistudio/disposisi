@@ -12,11 +12,17 @@ const Profile = () => {
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                // Fetch logged in user (ID 1 for prototype)
+                // Fetch logged in user
+                const userStr = sessionStorage.getItem('iwogate_user');
+                if (!userStr) {
+                    navigate('/login');
+                    return;
+                }
+                const localUser = JSON.parse(userStr);
                 const [userData] = await sql`
-                    SELECT * FROM users WHERE id = 1
+                    SELECT * FROM users WHERE id = ${localUser.id}
                 `;
-                setUser(userData);
+                setUser(userData || localUser);
             } catch (err) {
                 console.error("Failed to fetch user:", err);
             } finally {
@@ -28,7 +34,7 @@ const Profile = () => {
 
     const handleLogout = () => {
         if (confirm("Apakah Anda yakin ingin keluar?")) {
-            localStorage.removeItem('iwogate_user');
+            sessionStorage.removeItem('iwogate_user');
             navigate('/login');
         }
     };
