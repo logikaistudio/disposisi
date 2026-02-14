@@ -201,9 +201,14 @@ const Settings = () => {
         try {
             await sql`DELETE FROM users WHERE id = ${id}`;
             await fetchUsers();
+            alert("User berhasil dihapus.");
         } catch (err) {
-            console.error(err);
-            alert("Gagal menghapus user (mungkin terikat data lain).");
+            console.error("Delete Error:", err);
+            if (err.message && err.message.includes("violates foreign key constraint")) {
+                alert("Gagal menghapus User: User ini memiliki data Tugas terkait yang tidak bisa dihapus otomatis via constraint. Harap hapus tugas-tugas user ini terlebih dahulu.");
+            } else {
+                alert("Gagal menghapus user: " + err.message);
+            }
         }
     };
 
