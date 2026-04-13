@@ -1,4 +1,4 @@
-import { sql } from '../../../server/lib/db.js';
+import { sql } from '../../lib/db.js';
 import bcrypt from 'bcryptjs';
 
 export default async function handler(req, res) {
@@ -39,6 +39,10 @@ export default async function handler(req, res) {
     });
   } catch (err) {
     console.error('Login error:', err);
-    return res.status(500).json({ message: 'Terjadi kesalahan server.' });
+    return res.status(500).json({ 
+      message: 'Terjadi kesalahan server.',
+      error: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined 
+    });
   }
 }

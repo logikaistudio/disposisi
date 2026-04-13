@@ -1,4 +1,4 @@
-import { sql } from '../../../server/lib/db.js';
+import { sql } from '../../lib/db.js';
 
 const formatTask = (task) => ({
   ...task,
