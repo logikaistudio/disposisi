@@ -72,13 +72,19 @@ const CreateTask = () => {
                     id: u.id,
                 }));
 
-                const deptOptions = [
-                    { value: 'dept:Finance', label: 'Departemen Keuangan', type: 'dept', dept: 'Finance' },
-                    { value: 'dept:Marketing', label: 'Departemen Pemasaran', type: 'dept', dept: 'Marketing' },
-                    { value: 'dept:IT', label: 'Departemen IT', type: 'dept', dept: 'IT' },
-                    { value: 'dept:HR', label: 'Departemen SDM', type: 'dept', dept: 'HR' },
-                    { value: 'dept:Ops', label: 'Departemen Operasional', type: 'dept', dept: 'Ops' }
-                ];
+                let deptOptions = [];
+                try {
+                    const { getDepartments } = await import('../lib/api.js');
+                    const deptRes = await getDepartments();
+                    deptOptions = deptRes.departments.map(dept => ({
+                        value: `dept:${dept.name}`,
+                        label: `Divisi ${dept.label || dept.name}`,
+                        type: 'dept',
+                        dept: dept.name
+                    }));
+                } catch (e) {
+                    console.error('Failed to load departments', e);
+                }
 
                 if (user?.role === 'staff' || user?.role === 'staf') {
                     setAssignees([...userOptions]);
