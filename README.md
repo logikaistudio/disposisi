@@ -47,19 +47,46 @@ Ini akan membuat tabel `users`, `tasks`, `attachments`, dan `task_logs` serta me
    npm run build
    ```
 
-## Setup Neon Database
+## Deployment ke Vercel
 
-1. Buat akun Neon dan project baru
-2. Buat branch serverless
-3. Salin connection string PostgreSQL
-4. Buat file `.env` di root project:
+1. **Connect Repository ke Vercel**
+   - Import project dari GitHub repository
+   - Pilih branch `main`
+
+2. **Environment Variables**
+   Tambahkan environment variable berikut di Vercel dashboard:
    ```
-   DATABASE_URL="postgresql://user:password@host:port/dbname"
+   DATABASE_URL=postgresql://username:password@hostname:port/database
+   NODE_ENV=production
    ```
-5. Jalankan backend:
-   ```bash
-   npm run dev:api
-   ```
+
+3. **Build Settings**
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+   - Install Command: `npm install`
+
+4. **Deploy**
+   - Vercel akan otomatis mendeteksi konfigurasi dan deploy
+   - API routes akan tersedia di `/api/*`
+   - Frontend akan served sebagai static files
+
+## Struktur API Routes (Vercel)
+
+```
+api/
+├── auth/
+│   └── login.js          # POST /api/auth/login
+├── tasks/
+│   ├── index.js          # GET/POST /api/tasks
+│   └── [id].js           # GET/DELETE/POST /api/tasks/[id]
+├── users/
+│   └── index.js          # GET /api/users
+├── departments/
+│   └── index.js          # GET /api/departments
+├── roles/
+│   └── index.js          # GET /api/roles
+└── health.js             # GET /api/health
+```
 
 ## Struktur Project
 
