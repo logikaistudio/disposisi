@@ -1,5 +1,8 @@
-import { sql } from './lib/db.js';
+import { neon } from '@neondatabase/serverless';
 import bcrypt from 'bcryptjs';
+
+const sql = neon(process.env.DATABASE_URL ||
+  'postgresql://neondb_owner:npg_H8xuZER1Jaoi@ep-late-mouse-a15eyd85-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require');
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {

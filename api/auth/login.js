@@ -1,5 +1,10 @@
-import { sql } from '../../lib/db.js';
+import { neon } from '@neondatabase/serverless';
 import bcrypt from 'bcryptjs';
+
+const connectionString = process.env.DATABASE_URL ||
+  'postgresql://neondb_owner:npg_H8xuZER1Jaoi@ep-late-mouse-a15eyd85-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require';
+
+const sql = neon(connectionString);
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -30,7 +35,6 @@ export default async function handler(req, res) {
       return res.status(401).json({ message: 'Username atau password salah.' });
     }
 
-    // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
 
     return res.json({
@@ -42,7 +46,6 @@ export default async function handler(req, res) {
     return res.status(500).json({ 
       message: 'Terjadi kesalahan server.',
       error: err.message,
-      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined 
     });
   }
 }

@@ -1,4 +1,7 @@
-import { sql } from '../../lib/db.js';
+import { neon } from '@neondatabase/serverless';
+
+const sql = neon(process.env.DATABASE_URL ||
+  'postgresql://neondb_owner:npg_H8xuZER1Jaoi@ep-late-mouse-a15eyd85-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require');
 
 const formatTask = (task) => ({
   ...task,
@@ -49,7 +52,7 @@ export default async function handler(req, res) {
       return res.json({ tasks: filtered });
     } catch (err) {
       console.error(err);
-      return res.status(500).json({ message: 'Gagal memuat tugas.' });
+      return res.status(500).json({ message: 'Gagal memuat tugas.', error: err.message });
     }
   }
 
@@ -108,7 +111,7 @@ export default async function handler(req, res) {
       return res.json({ tasks: created });
     } catch (err) {
       console.error(err);
-      return res.status(500).json({ message: 'Gagal membuat tugas.' });
+      return res.status(500).json({ message: 'Gagal membuat tugas.', error: err.message });
     }
   }
 

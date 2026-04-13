@@ -1,33 +1,40 @@
-import { sql } from './lib/db.js';
+import { neon } from '@neondatabase/serverless';
 
 export default async function handler(req, res) {
+  const connectionString = process.env.DATABASE_URL ||
+    'postgresql://neondb_owner:npg_H8xuZER1Jaoi@ep-late-mouse-a15eyd85-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require';
+
   try {
-    // Cek apakah tabel users ada
+    const sql = neon(connectionString);
+    
+    // Simple ping query
+    const result = await sql`SELECT NOW() as time, current_database() as db`;
+    
+    // Check tables
     const tables = await sql`
       SELECT table_name 
       FROM information_schema.tables 
       WHERE table_schema = 'public'
+      ORDER BY table_name
     `;
-    
-    // Cek jumlah user
-    const userCount = await sql`SELECT count(*) FROM users`;
-    
-    // Cek satu user (tanpa password)
-    const [sampleUser] = await sql`SELECT id, username, email FROM users LIMIT 1`;
+
+    // Check users (no password)
+    const users = await sql`SELECT id, username, email, role FROM users ORDER BY id`;
 
     return res.json({
-      success: true,
-      message: 'Database check successful',
+      ok: true,
+      time: result[0].time,
+      database: result[0].db,
+      usingEnvVar: !!process.env.DATABASE_URL,
       tables: tables.map(t => t.table_name),
-      userCount: userCount[0].count,
-      sampleUser
+      users
     });
   } catch (err) {
     return res.status(500).json({
-      success: false,
-      message: 'Database check failed',
+      ok: false,
       error: err.message,
-      stack: err.stack
+      code: err.code,
+      usingEnvVar: !!process.env.DATABASE_URL
     });
   }
 }
