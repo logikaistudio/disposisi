@@ -110,10 +110,10 @@ export const initializeDatabase = async () => {
       await sql`
         INSERT INTO users (name, username, email, password, role, department, avatar_url)
         VALUES
-          ('Super Administrator', 'superadmin', 'superadmin@example.com', 'password123', 'superuser', 'Management', 'https://ui-avatars.com/api/?name=Super+Admin'),
-          ('Administrator', 'admin', 'admin@example.com', 'iwogate123', 'admin', 'IT', 'https://ui-avatars.com/api/?name=Administrator'),
-          ('Budi Santoso', 'budi', 'budi.santoso@example.com', 'budi123', 'user', 'Finance', 'https://ui-avatars.com/api/?name=Budi+Santoso'),
-          ('Siti Aminah', 'siti', 'siti.aminah@example.com', 'siti123', 'user', 'Marketing', 'https://ui-avatars.com/api/?name=Siti+Aminah')
+          ('Super Administrator', 'superadmin', 'superadmin@example.com', '$2a$10$Fh7ndOtz1on2Zt3JFH2JUOjFFJ3XH73ZMYGhhksHxTD3Sita67rfa', 'superuser', 'Management', 'https://ui-avatars.com/api/?name=Super+Admin'),
+          ('Administrator', 'admin', 'admin@example.com', '$2a$10$B16FhrJjCqOBNpw6EwR5vOYx1i3YQAUuKZgwQ1npAUJ9QdXgJVQYG', 'admin', 'IT', 'https://ui-avatars.com/api/?name=Administrator'),
+          ('Budi Santoso', 'budi', 'budi.santoso@example.com', '$2a$10$rerUr8E5uzQ8gBt4BOHjmObPBKayYoTEn4eDCb4Qmjm7ZuwIQlc0u', 'user', 'Finance', 'https://ui-avatars.com/api/?name=Budi+Santoso'),
+          ('Siti Aminah', 'siti', 'siti.aminah@example.com', '$2a$10$VCSSTsiTEpdj5.dNJk.XPO0xJSYkfb6fnc3ZA29qBwcmfJI9f.axO', 'user', 'Marketing', 'https://ui-avatars.com/api/?name=Siti+Aminah')
       `;
     }
 

@@ -28,7 +28,23 @@ Untuk reset/menginisialisasi database:
 node scripts/init-db.js
 ```
 
+Untuk reset total database (hapus semua data dan buat ulang):
+```bash
+node scripts/reset-db.js
+```
+
 Ini akan membuat tabel `users`, `tasks`, `attachments`, dan `task_logs` serta memasukkan data sample.
+
+## User Credentials Default
+
+Setelah setup database, gunakan credentials berikut untuk login:
+
+| Username | Password | Role |
+|----------|----------|------|
+| `superadmin` | `password123` | Superuser |
+| `admin` | `iwogate123` | Admin |
+| `budi` | `budi123` | User |
+| `siti` | `siti123` | User |
 
 ## Memulai
 
