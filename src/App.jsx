@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Layout from './components/Layout';
-import Login from './pages/Login';
-import ResetPassword from './pages/ResetPassword';
-import Dashboard from './pages/Dashboard';
-import CreateTask from './pages/CreateTask';
-import TaskDetail from './pages/TaskDetail';
-import Departments from './pages/Departments';
-import DelegationHistory from './pages/DelegationHistory';
-import Settings from './pages/Settings';
-import Profile from './pages/Profile';
+import Login from './views/Login';
+import ResetPassword from './views/ResetPassword';
+import Dashboard from './views/Dashboard';
+import CreateTask from './views/CreateTask';
+import TaskDetail from './views/TaskDetail';
+import Departments from './views/Departments';
+import DelegationHistory from './views/DelegationHistory';
+import Settings from './views/Settings';
+import Profile from './views/Profile';
 
 // Helper component to check auth
 const RequireAuth = ({ children }) => {
