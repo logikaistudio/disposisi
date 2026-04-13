@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Upload, X, ArrowLeft, Paperclip, Loader2, Plus, Users, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { sql } from '../lib/db';
+import { getUsers, createTasks } from '../lib/api.js';
 import './CreateTask.css';
 
 const CreateTask = () => {
     const navigate = useNavigate();
 
-    // Task Rows State: [{ id, title, assigneeId, assigneeType, deadline }]
+    // Task Rows State: [{ id, title, assigneeId, assigneeType, deadline, taskTypes }]
     const [taskRows, setTaskRows] = useState([
-        { id: 1, title: '', assigneeDesc: '', deadline: '' }
+        { id: 1, title: '', assigneeDesc: '', deadline: '', taskTypes: [] }
     ]);
 
     const [desc, setDesc] = useState('');
@@ -19,6 +19,30 @@ const CreateTask = () => {
     const [files, setFiles] = useState([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
+
+    // Task types options
+    const taskTypeOptions = [
+        'UMP',
+        'UDK/ Monitor',
+        'UDL',
+        'Proses',
+        'Pelajari',
+        'Sarankan',
+        'Kordinasikan',
+        'ACC',
+        'Tanggapi/ Saran',
+        'Bantu',
+        'Wakili',
+        'Ingatkan',
+        'Infokan',
+        'File',
+        'Hadir/Tidak Hadir',
+        'Acarakan',
+        'Siapkan',
+        'Bahas/ Rapatkan',
+        'Tindak lanjuti',
+        'Buat Jawaban'
+    ];
 
     // Assignees List (Departments + Users)
     const [assignees, setAssignees] = useState([]);
@@ -30,20 +54,22 @@ const CreateTask = () => {
 
         const fetchAssignees = async () => {
             try {
-                // Fetch Departments (Hardcoded) + Users (From DB)
-                const result = await sql`SELECT id, name, department, role FROM users WHERE id != ${user?.id || 1}`;
+                const result = await getUsers();
+                const users = result.users.filter((u) => u.id !== (user?.id || 0));
 
-                // If role is 'staff' or 'staf', limit to Director
-                let filteredResult = result;
+                let filteredResult = users;
                 if (user?.role === 'staff' || user?.role === 'staf') {
-                    filteredResult = result.filter(u => u.role === 'director' || u.role === 'direktur' || u.role === 'admin' || u.role === 'superuser');
+                    filteredResult = users.filter(
+                        (u) => ['director', 'direktur', 'admin', 'superuser'].includes(u.role)
+                    );
                 }
 
-                const userOptions = filteredResult.map(u => ({
+                const userOptions = filteredResult.map((u) => ({
                     value: `user:${u.id}`,
                     label: `${u.name} (${u.role === 'director' ? 'Direktur' : u.department})`,
                     type: 'user',
-                    dept: u.department
+                    dept: u.department,
+                    id: u.id,
                 }));
 
                 const deptOptions = [
@@ -54,15 +80,13 @@ const CreateTask = () => {
                     { value: 'dept:Ops', label: 'Departemen Operasional', type: 'dept', dept: 'Ops' }
                 ];
 
-                // If staff, hide department options, force user selection (Director)
                 if (user?.role === 'staff' || user?.role === 'staf') {
                     setAssignees([...userOptions]);
                 } else {
                     setAssignees([...deptOptions, ...userOptions]);
                 }
-
             } catch (err) {
-                console.error("Failed to fetch assignees:", err);
+                console.error('Failed to fetch assignees:', err);
             }
         };
         fetchAssignees();
@@ -96,7 +120,7 @@ const CreateTask = () => {
     };
 
     const addTaskRow = () => {
-        setTaskRows([...taskRows, { id: Date.now(), title: '', assigneeDesc: '', deadline: '' }]);
+        setTaskRows([...taskRows, { id: Date.now(), title: '', assigneeDesc: '', deadline: '', taskTypes: [] }]);
     };
 
     const removeTaskRow = (id) => {
@@ -107,6 +131,19 @@ const CreateTask = () => {
 
     const updateTaskRow = (id, field, value) => {
         setTaskRows(taskRows.map(r => r.id === id ? { ...r, [field]: value } : r));
+    };
+
+    const toggleTaskType = (rowId, type) => {
+        setTaskRows(taskRows.map(row => {
+            if (row.id === rowId) {
+                const currentTypes = row.taskTypes || [];
+                const newTypes = currentTypes.includes(type)
+                    ? currentTypes.filter(t => t !== type)
+                    : [...currentTypes, type];
+                return { ...row, taskTypes: newTypes };
+            }
+            return row;
+        }));
     };
 
     const handleSubmit = async (e) => {
@@ -122,7 +159,6 @@ const CreateTask = () => {
         setIsSubmitting(true);
 
         try {
-            // Collect attachments data efficiently once
             const attachmentData = [];
             if (files.length > 0) {
                 for (const file of files) {
@@ -136,78 +172,50 @@ const CreateTask = () => {
                     if (file.size < 5 * 1024 * 1024) {
                         try {
                             fileUrl = await fileToDataURL(file);
-                        } catch (readErr) { }
+                        } catch (readErr) {
+                            console.error('Failed to read file', readErr);
+                        }
                     }
 
                     attachmentData.push({
                         name: file.name,
                         type: fileType,
                         size: sizeInMB + ' MB',
-                        url: fileUrl
+                        url: fileUrl,
                     });
                 }
             }
 
-            // Loop through each task row and create delegation
-            for (const row of taskRows) {
-                // Parse assignee
-                const assigneeOption = assignees.find(a => a.value === row.assigneeDesc);
-                let assignedToDept = '';
+            const payloadTasks = taskRows.map((row) => {
+                const assigneeOption = assignees.find((a) => a.value === row.assigneeDesc);
+                let assignedToDept = 'General';
                 let assignedToUserId = null;
 
                 if (assigneeOption) {
                     assignedToDept = assigneeOption.dept;
                     if (assigneeOption.type === 'user') {
-                        assignedToUserId = assigneeOption.value.split(':')[1];
-                    }
-                } else {
-                    // Fallback or custom entry? Assuming validation prevents this, 
-                    // but if using custom text, default to General/Unknown dept
-                    assignedToDept = 'General';
-                }
-
-                const [newTask] = await sql`
-                INSERT INTO tasks (
-                    title, 
-                    description, 
-                    assigned_by_user_id, 
-                    assigned_to_dept,
-                    assigned_to_user_id,
-                    status, 
-                    due_date, 
-                    type,
-                    reference_no,
-                    document_date,
-                    sender_info
-                ) VALUES (
-                    ${row.title},
-                    ${desc},
-                    ${currentUser?.id || 1}, 
-                    ${assignedToDept},
-                    ${assignedToUserId},
-                    'Pending',
-                    ${row.deadline},
-                    'outgoing',
-                    ${refNo},
-                    ${docDate || null},
-                    ${sender}
-                )
-                RETURNING id
-            `;
-
-                // Insert attachments for THIS task
-                if (newTask && attachmentData.length > 0) {
-                    for (const att of attachmentData) {
-                        await sql`
-                        INSERT INTO attachments (
-                            task_id, file_name, file_type, file_size, file_url
-                        ) VALUES (
-                            ${newTask.id}, ${att.name}, ${att.type}, ${att.size}, ${att.url}
-                        )
-                    `;
+                        assignedToUserId = parseInt(assigneeOption.value.split(':')[1], 10);
                     }
                 }
-            }
+
+                return {
+                    title: row.title,
+                    assigned_to_dept: assignedToDept,
+                    assigned_to_user_id: assignedToUserId,
+                    due_date: row.deadline,
+                    task_types: row.taskTypes || []
+                };
+            });
+
+            await createTasks({
+                tasks: payloadTasks,
+                desc,
+                refNo,
+                docDate,
+                sender,
+                attachments: attachmentData,
+                assignedById: currentUser?.id || null,
+            });
 
             navigate('/history'); // Redirect to history list to see the bulk creation
 
@@ -332,6 +340,22 @@ const CreateTask = () => {
                                             required
                                             style={{ background: 'white', fontSize: '0.85rem' }}
                                         />
+                                    </div>
+                                </div>
+
+                                <div className="form-group task-types-group" style={{ marginTop: '0.75rem' }}>
+                                    <label className="task-types-label">Jenis Tugas (Pilih satu atau lebih)</label>
+                                    <div className="task-types-grid">
+                                        {taskTypeOptions.map((type) => (
+                                            <label key={type} className="task-type-item">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={(row.taskTypes || []).includes(type)}
+                                                    onChange={() => toggleTaskType(row.id, type)}
+                                                />
+                                                <span>{type}</span>
+                                            </label>
+                                        ))}
                                     </div>
                                 </div>
                             </div>

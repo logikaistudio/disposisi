@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Iwogate</string>
-    <string name="title_activity_main">Iwogate</string>
+    <string name="app_name">Disposisi</string>
+    <string name="title_activity_main">Disposisi</string>
     <string name="package_name">com.iwogate.app</string>
     <string name="custom_url_scheme">com.iwogate.app</string>
 </resources>

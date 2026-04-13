@@ -60,8 +60,8 @@ const Header = () => {
     return (
         <header className="app-header">
             <div className="brand" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-                <div className="logo-icon">i</div>
-                <h1 className="app-name">iwogate</h1>
+                <div className="logo-icon">D</div>
+                <h1 className="app-name">Disposisi</h1>
             </div>
             <div style={{ position: 'relative' }}>
                 <button className="menu-btn" onClick={toggleMenu}>

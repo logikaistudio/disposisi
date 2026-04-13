@@ -10,8 +10,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['vite.svg'],
       manifest: {
-        name: 'Iwogate Task Manager',
-        short_name: 'Iwogate',
+        name: 'Disposisi',
+        short_name: 'Disposisi',
         description: 'Aplikasi manajemen tugas dan delegasi untuk tim.',
         theme_color: '#2563eb',
         background_color: '#ffffff',
@@ -32,4 +32,13 @@ export default defineConfig({
       }
     })
   ],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:4000',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 })

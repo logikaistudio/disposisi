@@ -46,6 +46,22 @@ const TaskCard = ({ task, currentUser, onDelete }) => {
                 </div>
 
                 <h3 className="task-title">{task.title}</h3>
+                {task.task_types && task.task_types.length > 0 && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginBottom: '0.5rem' }}>
+                        {task.task_types.map((type, index) => (
+                            <span key={index} style={{
+                                fontSize: '0.7rem',
+                                padding: '0.2rem 0.4rem',
+                                background: 'var(--primary-light)',
+                                color: 'var(--primary)',
+                                borderRadius: 'var(--radius-sm)',
+                                fontWeight: '500'
+                            }}>
+                                {type}
+                            </span>
+                        ))}
+                    </div>
+                )}
                 <p className="task-desc">{task.description}</p>
 
                 <div className="task-footer">
