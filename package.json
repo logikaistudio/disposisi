@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:api": "node server/index.js",
+    "init-db": "node scripts/init-db.js",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
