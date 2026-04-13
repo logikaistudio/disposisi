@@ -1,3 +1,4 @@
+import bcrypt from 'bcryptjs';
 import { sql } from '../lib/db.js';
 
 const sanitizeUser = (user) => {
@@ -20,7 +21,9 @@ export const setupAuthRoutes = (app) => {
         return res.status(400).json({ message: 'Username tidak ditemukan.' });
       }
       const user = users[0];
-      if (user.password !== password) {
+      
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
         return res.status(400).json({ message: 'Password salah.' });
       }
       return res.json({ user: sanitizeUser(user) });
@@ -47,7 +50,8 @@ export const setupAuthRoutes = (app) => {
       if (users.length === 0) {
         return res.status(400).json({ message: 'Email tidak terdaftar.' });
       }
-      await sql`UPDATE users SET password = ${password} WHERE email = ${email}`;
+      const hashedPassword = await bcrypt.hash(password, 10);
+      await sql`UPDATE users SET password = ${hashedPassword} WHERE email = ${email}`;
       return res.json({ message: 'Password berhasil diubah. Silakan login kembali.' });
     } catch (err) {
       console.error(err);

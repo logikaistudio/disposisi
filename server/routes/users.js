@@ -1,3 +1,4 @@
+import bcrypt from 'bcryptjs';
 import { sql } from '../lib/db.js';
 
 const sanitizeUser = (user) => {
@@ -40,9 +41,12 @@ export const setupUserRoutes = (app) => {
       if (existing.length > 0) {
         return res.status(400).json({ message: 'Username atau email sudah digunakan.' });
       }
+      
+      const hashedPassword = password ? await bcrypt.hash(password, 10) : '';
+      
       const [newUser] = await sql`
         INSERT INTO users (name, username, email, password, role, department, avatar_url)
-        VALUES (${name}, ${username}, ${email}, ${password || ''}, ${role}, ${department || null}, ${avatar_url || null})
+        VALUES (${name}, ${username}, ${email}, ${hashedPassword}, ${role}, ${department || null}, ${avatar_url || null})
         RETURNING *
       `;
       return res.json({ user: sanitizeUser(newUser) });
@@ -68,9 +72,10 @@ export const setupUserRoutes = (app) => {
         return res.status(400).json({ message: 'Username atau email sudah digunakan.' });
       }
       if (password) {
+        const hashedPassword = await bcrypt.hash(password, 10);
         await sql`
           UPDATE users
-          SET name = ${name}, username = ${username}, email = ${email}, role = ${role}, department = ${department || null}, avatar_url = ${avatar_url || null}, password = ${password}
+          SET name = ${name}, username = ${username}, email = ${email}, role = ${role}, department = ${department || null}, avatar_url = ${avatar_url || null}, password = ${hashedPassword}
           WHERE id = ${req.params.id}
         `;
       } else {
