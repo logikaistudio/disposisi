@@ -1,4 +1,10 @@
+import bcrypt from 'bcryptjs';
 import { sql } from './db.js';
+
+const isHashedPassword = (password) => {
+  return typeof password === 'string' &&
+    (password.startsWith('$2a$') || password.startsWith('$2b$') || password.startsWith('$2y$'));
+};
 
 export const initializeDatabase = async () => {
   console.log('Initializing database...');
@@ -89,6 +95,15 @@ export const initializeDatabase = async () => {
           ('Admin', 'admin', 'Manajer tingkat departemen atau operasional.', 'view_task, create_task, edit_task, delete_task, manage_users'),
           ('User', 'user', 'Pengguna standar untuk pelaksana tugas.', 'view_task, update_status, view_profile')
       `;
+    }
+
+    // Ensure existing user passwords are hashed before seeding.
+    const existingUsers = await sql`SELECT id, password FROM users`;
+    for (const user of existingUsers) {
+      if (user.password && !isHashedPassword(user.password)) {
+        const hashedPassword = await bcrypt.hash(user.password, 10);
+        await sql`UPDATE users SET password = ${hashedPassword} WHERE id = ${user.id}`;
+      }
     }
 
     const deptCount = await sql`SELECT count(*) FROM departments`;

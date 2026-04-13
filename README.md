@@ -33,6 +33,11 @@ Untuk reset total database (hapus semua data dan buat ulang):
 node scripts/reset-db.js
 ```
 
+Jika Anda sudah memiliki data di database dan ingin memperbaiki password plain text agar bisa login, jalankan:
+```bash
+npm run fix-passwords
+```
+
 Ini akan membuat tabel `users`, `tasks`, `attachments`, dan `task_logs` serta memasukkan data sample.
 
 ## User Credentials Default
