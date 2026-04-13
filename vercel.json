@@ -7,6 +7,10 @@
   "devCommand": "npm run dev",
   "rewrites": [
     {
+      "source": "/api/(.*)",
+      "destination": "/api"
+    },
+    {
       "source": "/((?!api/|assets/|vite.svg|manifest.webmanifest).*)",
       "destination": "/index.html"
     }
